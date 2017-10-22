@@ -10,6 +10,7 @@ base_year = 2012
 start_year = 2
 end_year = 7
 start_month = 10
+end_month = 9
 
 def tf(diary):
     wf = {}
@@ -49,25 +50,36 @@ def plot_wf(diary, number):
     plt.xticks(xpos, words)
     plt.show()
 
+def get_month_year(index):
+    if index < 3:
+        return str(months.get(start_month + index)) + ' ' + str(base_year)
+    else:
+        remaining = index - 3
+        year = 1 + remaining/12 + base_year
+        month = months.get(remaining%12+1)
+        return str(month) + ' ' + str(year)
+
 def split_by_year(diary):
     diary_by_year = []
-    for i in range(start_year,end_year):
+    for i in range(start_year+1,end_year+1):
         idx = diary.find('January 201' + str(i))
         diary_by_year.append(diary[:idx])
         diary = diary[idx:]
-    print (len(diary_by_year))
+    diary_by_year.append(diary)
     assert len(diary_by_year) == end_year-start_year+1
     print('Number of years analyzed: ' + str(len(diary_by_year)))
     return diary_by_year
 
 def split_by_month(diary):
-    regex = '('
-    for month in months.values():
-        regex += month + '|'
-    regex = regex[:-1]
-    regex += ') 201[' + str(start_year) + '-' + str(end_year) + ']'
-    print (regex)
-    diary_by_month = re.split(regex, diary)
+    diary_by_month = []
+    num_months = (end_year-start_year)*12 + (end_month-start_month)
+    #  print (num_months)
+    for i in range(1,num_months+1):
+        #  print(get_month_year(i))
+        idx = diary.find(get_month_year(i))
+        diary_by_month.append(diary[:idx])
+        diary = diary[idx:]
+    diary_by_month.append(diary)
     print('Number of months analyzed: ' + str(len(diary_by_month)))
     return diary_by_month
 
@@ -86,15 +98,6 @@ def analyze_sentiment_year(raw_diary):
         years.append((idx, year_sentiment.polarity, year.sentiment.subjectivity))
     return years
 
-def get_month_year(index):
-    if index < 3:
-        return str(months.get(start_month + index)) + ' ' + str(base_year)
-    else:
-        remaining = index - 3
-        year = 1 + remaining/12 + base_year
-        month = months.get(remaining%12+1)
-        return str(month) + ' ' + str(year)
-
 def analyze_sentiment_month(raw_diary):
     months = []
     for i, m in enumerate(diary_by_month):
@@ -106,8 +109,8 @@ def analyze_sentiment_month(raw_diary):
     return months
 
 if __name__ == '__main__':
-    #  with open('/Users/jchang1397/Downloads/diary', 'r') as d:
-    with open('test', 'r') as d:
+    with open('/Users/jchang1397/Downloads/diary', 'r') as d:
+    #  with open('test', 'r') as d:
         raw_diary = d.read().decode('utf-8')
     verify_clean_data(raw_diary)
     diary = clean_words(TextBlob(raw_diary))
@@ -115,14 +118,17 @@ if __name__ == '__main__':
     #  plot_wf(diary, 100)
 
     #  analyze_sentiment_overall(diary)
-    diary_by_year = split_by_year(raw_diary)
+
+    #  diary_by_year = split_by_year(raw_diary)
     #  analyze_sentiment_year(diary_by_year)
+
     diary_by_month = split_by_month(raw_diary)
+    #  print len(diary_by_month)
     #  for m in diary_by_month:
         #  print ('\n')
         #  print ('split\n')
         #  print (m)
-    print( str(diary_by_month[1]))
-    #  analyze_sentiment_month(diary_by_month)
+    #  print( str(diary_by_month[1]))
+    analyze_sentiment_month(diary_by_month)
 
     #  diary_by_month = split_by_month(raw_diary)
