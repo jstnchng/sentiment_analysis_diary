@@ -2,7 +2,6 @@ from textblob import TextBlob
 from nltk.corpus import stopwords
 import os, math
 import re
-import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
 
@@ -16,10 +15,7 @@ def get_wf(diary):
     wf = {}
     #  for word in diary.noun_phrases:
     for word in diary.words:
-        if word in wf:
-            wf[word] += 1
-        else:
-            wf[word] = 1
+        wf[word] = wf[word]+1 if word in wf else 1
     return wf
 
 def verify_clean_data(raw_diary):
@@ -40,7 +36,7 @@ def clean_words(raw_diary):
     return TextBlob(' '.join(cleaned_diary))
 
 def write_to_file(filename, csv):
-    f = open(filename, 'w+')
+    f = open('csv/'+filename, 'w+')
     f.write(csv)
 
 def plot_wf(diary, number, time):
@@ -56,10 +52,6 @@ def plot_wf(diary, number, time):
         csv += str(word) + ',' + str(tf) + ',' + percentage + '\n'
     filename = 'wf_' + time + datetime.now().strftime('%Y-%m-%d-%H-%M-%s') + '.csv'
     write_to_file(filename, csv)
-    #  xpos = np.arange(len(words))
-    #  plt.bar(xpos, scores)
-    #  plt.xticks(xpos, words)
-    #  plt.show()
 
 def get_month_year(index):
     if index < 3:
@@ -121,34 +113,46 @@ def analyze_sentiment_list(time, diary_list):
     write_to_file(filename, csv)
     return sentiments
 
-#  def get_wf_for_word(word, wfs):
-    #  wf_word = []
-    #  for wf in wfs:
-        #  score = wf.get(word)
-        #  tf = round(score,5)
-        #  percentage = str(round(float(score)/len(wf.words)*100,5)) + '%'
-        #  print "\tIndex: ", i ," Word: ", word, " TF: ", tf, " %: ", percentage
-        #  csv += str(word) + ',' + str(tf) + ',' + percentage + '\n'
-    #  return
+def get_wf_for_word(word, wfs):
+    wf_word = []
+    csv = 'Word,Index,TF,%\n'
+    filename = 'wf_' + word + datetime.now().strftime('%Y-%m-%d-%H-%M-%s') + '.csv'
+    for wf in wfs:
+        idx = wf[0]
+        text = wf[1]
+        length = wf[2]
+        score = 0 if text.get(word) is None else text.get(word)
+        tf = round(score,5)
+        percentage = round(float(score)/length*100,5)
+        wf_word.append( (idx, word, tf, percentage) )
+        print  'Word: ' + word + ' Index: ' + idx + ' TF: ' + str(tf) + ' %: ' + str(percentage) + '%'
+        csv += str(word) + ',' + idx + ',' + str(tf) + ',' + str(percentage) + '%' + '\n'
+    write_to_file(filename, csv)
+    return wf_word
 
 if __name__ == '__main__':
     with open('/Users/jchang1397/Downloads/diary', 'r') as d:
     #  with open('test', 'r') as d:
         raw_diary = d.read().decode('utf-8')
     verify_clean_data(raw_diary)
-    diary = clean_words(raw_diary)
 
-    analyze_sentiment_all(diary)
-    plot_wf(diary, 100, 'all')
+    #  diary = clean_words(raw_diary)
+    #  analyze_sentiment_all(diary)
+    #  plot_wf(diary, 100, 'all')
 
-    diary_by_year = split_by_year(raw_diary)
-    analyze_sentiment_list('Year', diary_by_year)
-    analyze_sentiment_year(diary_by_year)
+    #  diary_by_year = split_by_year(raw_diary)
+    #  analyze_sentiment_list('Year', diary_by_year)
+    #  analyze_sentiment_year(diary_by_year)
 
     diary_by_month = split_by_month(raw_diary)
-    analyze_sentiment_list('Month', diary_by_month)
-
-    #  wf_by_month = []
-    #  for month in diary_by_month:
-        #  wf_by_month.append(get_wf(month))
+    #  analyze_sentiment_list('Month', diary_by_month)
+    wf_by_month = []
+    for month in diary_by_month:
+        text = month[1]
+        idx = month[0]
+        wf_by_month.append( (idx, get_wf(text), len(text.words)) )
+    get_wf_for_word('Tired', wf_by_month)
+    get_wf_for_word('Sad', wf_by_month)
+    get_wf_for_word('Happy', wf_by_month)
+    get_wf_for_word('Good', wf_by_month)
 
