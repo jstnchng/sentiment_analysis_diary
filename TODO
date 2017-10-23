@@ -1,0 +1,7 @@
+DONE: make clean words also make text blob
+DONE: rework splitting diary by year so it returns a tuple of (id, textblob)
+DONE: do the same for month
+TODO: implement getting frequency of a word monthly
+       tired, sad, happy
+TODO: implement finding new words that become more frequent (say, breaking top 50?)
+
