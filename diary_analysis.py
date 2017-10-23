@@ -113,6 +113,33 @@ def analyze_sentiment_list(time, diary_list):
     write_to_file(filename, csv)
     return sentiments
 
+def analyze_sentiment_month(diary_by_month):
+    monthly_sentiments = {}
+    for month in months.values():
+        monthly_sentiments[month] = (0.0,0)
+    csv = 'Month, Polarity\n'
+    filename = 'sentiment_by_month_grouped_' + datetime.now().strftime('%Y-%m-%d-%H-%M-%s') + '.csv'
+    for diary in diary_by_month:
+        month_year = diary[0]
+        text = diary[1]
+        sentiment = text.sentiment
+        polarity = sentiment.polarity
+        for month in months.values():
+            if month in month_year:
+                prev_sentiment = monthly_sentiments[month][0]
+                prev_num_months = monthly_sentiments[month][1]
+                monthly_sentiments[month] = (prev_sentiment+polarity, prev_num_months+1)
+                break
+    monthly_sentiments_aggregated = {}
+    for k in monthly_sentiments.keys():
+        sentiment = monthly_sentiments[k]
+        polarity = sentiment[0]/sentiment[1]
+        print 'Month: ', k, ' Polarity: ', str(polarity)
+        csv += k + ',' + str(polarity) + '\n'
+        monthly_sentiments_aggregated[k] = polarity
+    write_to_file(filename, csv)
+    return monthly_sentiments_aggregated
+
 def get_wf_for_word(word, wfs):
     wf_word = []
     csv = 'Word,Index,TF,%\n'
@@ -146,13 +173,14 @@ if __name__ == '__main__':
 
     diary_by_month = split_by_month(raw_diary)
     #  analyze_sentiment_list('Month', diary_by_month)
-    wf_by_month = []
-    for month in diary_by_month:
-        text = month[1]
-        idx = month[0]
-        wf_by_month.append( (idx, get_wf(text), len(text.words)) )
-    get_wf_for_word('Tired', wf_by_month)
-    get_wf_for_word('Sad', wf_by_month)
-    get_wf_for_word('Happy', wf_by_month)
-    get_wf_for_word('Good', wf_by_month)
+    #  wf_by_month = []
+    #  for month in diary_by_month:
+        #  text = month[1]
+        #  idx = month[0]
+        #  wf_by_month.append( (idx, get_wf(text), len(text.words)) )
+    #  get_wf_for_word('Tired', wf_by_month)
+    #  get_wf_for_word('Sad', wf_by_month)
+    #  get_wf_for_word('Happy', wf_by_month)
+    #  get_wf_for_word('Good', wf_by_month)
+    analyze_sentiment_month(diary_by_month)
 
