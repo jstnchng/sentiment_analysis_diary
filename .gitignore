@@ -2,3 +2,5 @@ test*
 *.csv
 *.out
 csv/
+output/
+*.txt

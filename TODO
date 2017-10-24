@@ -4,4 +4,5 @@ DONE: do the same for month
 DONE: implement getting frequency of a word monthly
        tired, sad, happy
 DONE: implement month by month sentiment
-TODO: implement finding new words that become more frequent (say, breaking top 50?)
+DONE: implement finding new words that become more frequent (say, breaking top 50?)
+TODO: clean up this shit
