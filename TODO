@@ -6,3 +6,5 @@ DONE: implement getting frequency of a word monthly
 DONE: implement month by month sentiment
 DONE: implement finding new words that become more frequent (say, breaking top 50?)
 TODO: clean up this shit
+TODO: add word vectors
+TODO: see if length of low polarity has changed year to year

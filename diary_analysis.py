@@ -7,9 +7,9 @@ from datetime import datetime
 
 months = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May', 6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
 base_year = 2012
-num_years = 6
+num_years = 8
 start_month = 10
-end_month = 9
+end_month = 2
 
 # Takes in a text blob and returns a map of its word frequencies, of the structure {word: (freq, percentage)}
 def get_wf(diary):
@@ -72,9 +72,10 @@ def get_month_year(index):
 def split_by_year(raw_diary):
     diary_by_year = []
     for i in range(1,num_years):
-        year = base_year+i-1
-        idx = raw_diary.find('January ' + str(year))
-        diary_by_year.append( (str(year+1), clean_words(raw_diary[:idx])) )
+        year = base_year+i
+        search_year_string = 'January ' + str(year)
+        idx = raw_diary.find(search_year_string)
+        diary_by_year.append( (str(year-1), clean_words(raw_diary[:idx])) )
         raw_diary = raw_diary[idx:]
     diary_by_year.append((str(base_year+num_years-1), clean_words(raw_diary)))
     print('Number of years analyzed: ' + str(len(diary_by_year)))
@@ -86,6 +87,7 @@ def split_by_month(raw_diary):
     num_months = (num_years-1)*12 + (end_month-start_month)
     for i in range(1,num_months+1):
         month_year = get_month_year(i-1)
+        print(month_year)
         idx = raw_diary.find(get_month_year(i))
         diary_by_month.append((month_year, clean_words(raw_diary[:idx])))
         raw_diary = raw_diary[idx:]
@@ -103,6 +105,16 @@ def analyze_sentiment_all(diary):
     filename = 'sentiment_overall' + datetime.now().strftime('%Y-%m-%d-%H-%M-%s') + '.csv'
     write_to_file(filename, csv)
     return overall_sentiment
+
+def analyze_sentiment_year(raw_diary):
+    years = []
+    for i, y in enumerate(diary_by_year):
+        year = TextBlob(y)
+        idx = i + base_year
+        year_sentiment = year.sentiment
+        print('Sentiment Analysis for ' + str(idx) + ': ' + str(year_sentiment.polarity))
+        years.append((idx, year_sentiment.polarity, year.sentiment.subjectivity))
+    return years
 
 def analyze_sentiment_list(time, diary_list):
     sentiments = []
@@ -193,20 +205,22 @@ def get_new_words(wfs):
 
 if __name__ == '__main__':
     # Getting the data
-    with open('/Users/jchang1397/Downloads/diary', 'r') as d:
+    with open('/Users/jchang1397/Downloads/diary_new', 'r') as d:
     #  with open('test', 'r') as d:
         raw_diary = d.read().decode('utf-8')
     verify_clean_data(raw_diary)
+    print('verified data in diary is clean')
 
     # Analysis for entire diary
     diary = clean_words(raw_diary)
     analyze_sentiment_all(diary)
-    sort_wf(diary, 100, 'all')
+    print('SA for entire diary complete')
+    #  sort_wf(diary, 100, 'all')
 
     # Analysis by year
     diary_by_year = split_by_year(raw_diary)
     analyze_sentiment_list('Year', diary_by_year)
-    analyze_sentiment_year(diary_by_year)
+    print('SA per year complete')
 
     # Analysis by month
     diary_by_month = split_by_month(raw_diary)
@@ -219,5 +233,6 @@ if __name__ == '__main__':
     words = ['Tired', 'Sad', 'Happy', 'Good', 'Pvns']
     for word in words:
         get_wf_for_word(word, wf_by_month)
-    analyze_sentiment_month(diary_by_month)
+    print('SA per month complete')
     new_words = get_new_words(wf_by_month)
+    print('calculating new words complete')
